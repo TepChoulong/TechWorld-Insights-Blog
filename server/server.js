@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 
 // Routes
 import authRoute from "./routes/auth_route.js";
+import postRoute from "./routes/post_route.js";
 
 const app = express();
 dotenv.config();
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // Calling Routes
 app.use("/api/auth", authRoute);
+app.use("/api/post", postRoute);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -27,6 +29,18 @@ async function ConnectDB() {
   }
 }
 ConnectDB();
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  const errorStatus = err.status || 500;
+  const errorMessage = err.message || "Something went wrong";
+  return res.status(errorStatus).json({
+    success: false,
+    status: errorStatus,
+    message: errorMessage,
+    stack: err.stack,
+  });
+});
 
 // App Listening
 app.listen(process.env.PORT, (err) => {
