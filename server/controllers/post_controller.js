@@ -76,18 +76,32 @@ const createPost = async (req, res, next) => {
 
 const editPost = async (req, res, next) => {
   try {
-    const updatedPost = await Post.findByIdAndUpdate(
-      req.params.postId,
+    const { postId } = req.params;
+
+    const postData = req.body;
+
+    if (!postData) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const post_slug = postData.title
+      .split(" ")
+      .join("-")
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9-]/g, ""); // replace space with hyphen and convert to lowercase
+
+    const updatedPost = await PostModel.findByIdAndUpdate(
+      { _id: postId },
       {
-        $set: {
-          title: req.body.title,
-          content: req.body.content,
-          image: req.body.image,
-          category: req.body.category,
-          slug: req.body.slug,
-        },
+        ...postData,
+        slug: post_slug,
       },
-      { new: true }
+      {
+        new: true,
+      }
     );
 
     res.status(200).json({
