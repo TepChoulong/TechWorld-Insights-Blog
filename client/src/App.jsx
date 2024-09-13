@@ -1,8 +1,16 @@
+import React from "react";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
+
+// Pages
+import Homepage from "./pages/Homepage";
+
 function App() {
   return (
-    <>
-      <h1>Hello World</h1>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Homepage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
