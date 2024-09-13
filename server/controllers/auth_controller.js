@@ -1,3 +1,8 @@
+// Packages
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+// Models
 import AuthModel from "../models/auth_model.js";
 
 const getAdminAccount = async (req, res, next) => {
@@ -48,11 +53,22 @@ const addAdminAccount = async (req, res, next) => {
       });
     }
 
+    const Salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, Salt);
+
+    if (!hashedPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Failed to hash password",
+      });
+    }
+
     const newUser = new AuthModel({
       username: username,
       email: email,
-      password: password,
-      isAdmin: true,
+      password: hashedPassword,
+      role: "moderator",
+      isModerator: true,
     });
 
     await newUser.save();
@@ -87,10 +103,32 @@ const loginForAdmin = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({
+    const isMatch = await bcrypt.compareSync(password, adminAccount.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid password",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        _id: adminAccount._id,
+        role: adminAccount.role,
+        isModerator: adminAccount.isModerator,
+        isAdmin: adminAccount.isAdmin,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
+
+    res.status(200).cookie("access_token", token, { secure: true }).json({
       success: true,
       message: "Login Successful",
-      admin: adminAccount,
+      adminAccount,
     });
   } catch (error) {
     next(error);
