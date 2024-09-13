@@ -14,7 +14,19 @@ const authSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      default: "moderator",
+    },
+    image: {
+      type: String,
+      default: "https://i.ibb.co/0fG7zZ0/user.png",
+    },
     isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    isModerator: {
       type: Boolean,
       default: false,
     },
