@@ -2,7 +2,25 @@ import PostModel from "../models/post_model.js";
 
 const getPosts = async (req, res, next) => {
   try {
-    const posts = await PostModel.find();
+    const startIndex = parseInt(req.query.startIndex) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const sortDirection = req.query.order === "asc" ? 1 : -1;
+
+    const posts = await PostModel.find({
+      ...(req.query.author_id && { author_id: req.query.author_id }),
+      ...(req.query.category && { category: req.query.category }),
+      ...(req.query.slug && { slug: req.query.slug }),
+      ...(req.query.postId && { _id: { $eq: req.query.postId } }),
+      ...(req.query.searchTerm && {
+        $or: [
+          { title: { $regex: req.query.searchTerm, $options: "i" } },
+          { content: { $regex: req.query.searchTerm, $options: "i" } },
+        ],
+      }),
+    })
+      .sort({ createdAt: sortDirection })
+      .skip(startIndex)
+      .limit(limit);
 
     if (!posts) {
       return res.status(400).json({
@@ -21,30 +39,7 @@ const getPosts = async (req, res, next) => {
   }
 };
 
-const getSpecificPost = async (req, res, next) => {
-  try {
-    const { postId } = req.params;
-
-    const post = await PostModel.findById({ _id: postId });
-
-    if (!post) {
-      return res.status(400).json({
-        success: false,
-        message: "Post not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Get post successfully",
-      post,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const addPost = async (req, res, next) => {
+const createPost = async (req, res, next) => {
   try {
     const postData = req.body;
 
@@ -55,13 +50,15 @@ const addPost = async (req, res, next) => {
       });
     }
 
-    const post_slug = postData.title.replace(/\s+/g, "-").toLowerCase(); // replace space with hyphen and convert to lowercase
+    const post_slug = postData.title
+      .split(" ")
+      .join("-")
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9-]/g, ""); // replace space with hyphen and convert to lowercase
 
     const newPost = new PostModel({
+      ...postData,
       author_id: postData.author_id,
-      title: postData.title,
-      content: postData.content,
-      category: postData.category,
       slug: post_slug,
     });
 
@@ -79,28 +76,16 @@ const addPost = async (req, res, next) => {
 
 const editPost = async (req, res, next) => {
   try {
-    const { postId } = req.params;
-
-    const postData = req.body;
-
-    const editedPost = await PostModel.findById({ _id: postId });
-
-    if (!editedPost) {
-      return res.status(400).json({
-        success: false,
-        message: "Post not found",
-      });
-    }
-
-    const post_slug = postData.title.replace(/\s+/g, "-").toLowerCase(); // replace space with hyphen and convert to lowercase
-
-    const updatedPost = await PostModel.findByIdAndUpdate(
-      { _id: postId },
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.postId,
       {
-        title: postData.title,
-        content: postData.content,
-        category: postData.category,
-        slug: post_slug,
+        $set: {
+          title: req.body.title,
+          content: req.body.content,
+          image: req.body.image,
+          category: req.body.category,
+          slug: req.body.slug,
+        },
       },
       { new: true }
     );
@@ -137,4 +122,4 @@ const deletePost = async (req, res, next) => {
   }
 };
 
-export { addPost, editPost, deletePost, getSpecificPost, getPosts };
+export { createPost, editPost, deletePost, getPosts };
