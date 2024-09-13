@@ -1,6 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 
 // Routes
 import authRoute from "./routes/auth_route.js";
@@ -9,6 +11,9 @@ import postRoute from "./routes/post_route.js";
 const app = express();
 dotenv.config();
 
+// Middlewares
+app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
 
 // Calling Routes
