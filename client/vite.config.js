@@ -10,4 +10,10 @@ export default defineConfig({
       plugins: [tailwindcss],
     },
   },
+  server: {
+    port: 8080,
+    proxy: {
+      "/api": "http://localhost:8080",
+    },
+  },
 });
