@@ -1,4 +1,5 @@
 import express from "express";
+import { verifyModeratorAccount } from "../utils/verifyModeratorAccount.js";
 
 // Controllers
 import {
@@ -12,10 +13,10 @@ const router = express.Router();
 
 router.get("/get-posts", getPosts); // Get all posts
 
-router.post("/create-post", createPost); // create post
+router.post("/create-post", verifyModeratorAccount, createPost); // create post
 
-router.put("/edit-post/:postId", editPost); // Edit post by ID
+router.put("/edit-post/:postId", verifyModeratorAccount, editPost); // Edit post by ID
 
-router.delete("/delete-post/:postId", deletePost); // Delete post by ID
+router.delete("/delete-post/:postId", verifyModeratorAccount, deletePost); // Delete post by ID
 
 export default router;
