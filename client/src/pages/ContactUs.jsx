@@ -3,15 +3,13 @@ import React from "react";
 // Components
 import NavbarComponent from "../components/NavbarComponent";
 
-const Homepage = () => {
+const ContactUs = () => {
   return (
     <div>
       <NavbarComponent />
-      <main className="md:w-[80%] mx-auto sm:p-4 ">
-        <h1>Homepage</h1>
-      </main>
+      <p>Contact Us</p>
     </div>
   );
 };
 
-export default Homepage;
+export default ContactUs;
