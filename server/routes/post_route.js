@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyModeratorAccount } from "../utils/verifyModeratorAccount.js";
+import verifyModeratorAccount from "../utils/verifyModeratorAccount.js";
 
 // Controllers
 import {
